@@ -1,0 +1,41 @@
+-capas tcp/ip
+	·aplicacion: modelo cliente-servidor
+	·transporte: mediante dos protocolos:
+		*tcp: mas fiable, llegan ordenados, comprueban si hay errores, control de segmentos, flujo de informacion, conexion orientada
+		*udp: paquetes desordenados, erroneos (las aplicaciones tienen el deber de subsanar los errores), conexion no orientada
+
+-pasos de un programa servidor:		
+	abrir socket con socket()
+		int Descriptor;
+		Descriptor = socket (AF_INET, SOCK_DGRAM, 0);
+
+	asignar al socket un puerto
+		struct sockaddr_in Direccion;
+		/* Hay que rellenar la estructura Direccion */ 
+		Direccion = ... (la veremos a continuación)
+		bind ( Descriptor, (struct sockaddr *)&Direccion, sizeof (Direccion));
+		
+		Direccion.sin_family = AF_INET;
+		Direccion.sin_port =htons(numero_puerto);  
+		Direccion.sin_addr.s_addr = INADDR_ANY; (Direccion));
+
+	para decir al so que deseamos atender un determinado servicio, de forma que cuando llegue un mensaje por ese puerto nos avise, debemos llamar a la funcion bind()
+
+	recibir mensajes con recvfrom()
+	
+	enviar mensajes con sendto()
+	
+	cerrar socket con close(Descriptor)
+	
+-pasos en el cliente:
+	abrir socket
+	enviar mensajes
+	recibir mensajes	
+	cerrar socket
+		
+-descripcion de paquetes:
+	DAY: dia de la maquina remota (Jueves, 12 de Septiembre de 2019)
+	TIME: hora de la maquina remota (17:00:00)
+	DAYTIME: dia y hora de la maquina remota (Jueves, 12 de Septiembre de 2019; 17:00:00)
+
+
