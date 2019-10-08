@@ -1,18 +1,21 @@
-#include <stdio.h>
+#include <iostream>
+#include <cstdio>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 #include <signal.h>
 #include <unistd.h>
 #include <time.h>
 #include <arpa/inet.h>
+#include <fstream>
 
 #define MSG_SIZE 250
 #define MAX_CLIENTS 30
 
+using namespace std;
 
 /*
  * El servidor ofrece el servicio de un chat
@@ -155,8 +158,10 @@ int main(){
                         } 
                         else{//Mensajes que escriben los clientes
                             bzero(buffer,sizeof(buffer));
+
+                            string almacenar[50];
                             
-                            recibidos = recv(i,buffer,sizeof(buffer),0);
+                            recibidos = recv(i,almacenar,sizeof(almacenar),0);
                             
                             if(recibidos > 0){
                                 
@@ -175,18 +180,27 @@ int main(){
                                         if(arrayClientes[j] != i)
                                             send(arrayClientes[j],buffer,strlen(buffer),0);
                                     //-------------------------------------------------
-                                    if(strstr(buffer,"USUARIO")){
-                                        strncpy(nuevo, &buffer[9], 21);
-
-                                        strcpy(buffer,"+Ok. Usuario correcto\n");
-                                        send(new_sd,buffer,strlen(buffer),0);
-                                    }
-                                    if(strstr(buffer,"PASSWORD")){
-                                        strncpy(nuevo, &buffer[10], 20);
-                                        
+                                    ifstream fe("usuarios.txt");
+                                    if((strcmp(almacenar[0].c_str(),"PASSWORD") && strcmp(almacenar[1].c_str(), "-u")) && strcmp(almacenar[3].c_str(), "-p")){                                        
                                         strcpy(buffer, "+Ok. Usuario validado\n");
                                         send(new_sd,buffer,strlen(buffer),0);
+                                        fe<<almacenar[2].c_str()<<"\t"<<almacenar[4].c_str()<<endl;
+                                        bzero(almacenar.c_str(), sizeof(almacenar));
                                     }
+                                    if(strcmp(almacenar[0].c_str(),"USUARIO")){
+                                        strcpy(buffer,"+Ok. Usuario correcto\n");
+                                        send(new_sd,buffer,strlen(buffer),0);
+                                        if(strcmp(almacenar[0].c_str(),"PASSWORD")){                                        
+                                            strcpy(buffer, "+Ok. Usuario validado\n");
+                                            send(new_sd,buffer,strlen(buffer),0);
+                                            fe<<almacenar[1].c_str()<<"\t"<<almacenar[3].c_str()<<endl; 
+                                        }
+                                        else{
+                                            strcpy(buffer, "-ERR. Error en la validación\n");
+                                            send(new_sd,buffer,strlen(buffer),0);
+                                        }
+                                    }
+                                    fe.close();
                                     //-------------------------------------------------
                                     
                                 }
@@ -196,7 +210,7 @@ int main(){
                             //Si el cliente introdujo ctrl+c
                             if(recibidos== 0)
                             {
-                                printf("El socket %d, ha introducido ctrl+c\n", i);
+                                cout<<"El socket "<<i<<" ha introducido ctrl+c"<<endl;
                                 //Eliminar ese socket
                                 salirCliente(i,&readfds,&numClientes,arrayClientes);
                             }
@@ -240,7 +254,7 @@ void salirCliente(int socket, fd_set * readfds, int * numClientes, int arrayClie
 
 
 void manejador (int signum){
-    printf("\nSe ha recibido la señal sigint\n");
+    cout<<"Se ha recibido la señal sigint"<<endl;
     signal(SIGINT,manejador);
     
     //Implementar lo que se desee realizar cuando ocurra la excepción de ctrl+c en el servidor
