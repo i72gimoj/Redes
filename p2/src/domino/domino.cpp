@@ -1,7 +1,9 @@
 #include "domino.hpp"
 
-Domino::Domino()
+Domino::Domino(int idjug1, int idjug2)
 {
+    this->_jugadores.push_back(Jugador(idjug1));
+    this->_jugadores.push_back(Jugador(idjug2));
     this->generarFichas();
     this->repartirFichas();
 }
@@ -14,7 +16,7 @@ void Domino::generarFichas()
     {
         ficha.setFirst(x);
         ficha.setSecond(y);
-        this->drawPool.push_back(ficha);
+        this->_drawPool.push_back(ficha);
         if (y == 6)
         {
             y = x;
@@ -24,40 +26,8 @@ void Domino::generarFichas()
     }
 }
 
-void Domino::mostrarDrawPool()
-{
-    for (size_t i = 0; i < this->drawPool.size(); i++)
-        std::cout << this->drawPool[i];
-    std::cout << std::endl;
-}
-
-bool Domino::estanRepartidas()
-{
-    if (this->drawPool.size() == 28)
-        return true;
-    return false;
-}
-
-void Domino::printPlayer(int player)
-{
-    if (player == 1)
-        for (size_t i = 0; i < this->playerOne.size(); i++)
-            std::cout << i + 1 << ". " << this->playerOne[i] << std::endl;
-    else
-        for (size_t i = 0; i < this->playerTwo.size(); i++)
-            std::cout << i + 1 << ". " << this->playerTwo[i] << std::endl;
-}
-
 void Domino::repartirFichas()
 {
-    if (this->estanRepartidas())
-    {
-        this->drawPool.clear();
-        this->playerOne.clear();
-        this->playerTwo.clear();
-        this->generarFichas();
-    }
-
     int random = 28;
     int nrandom;
     srand(time(NULL));
@@ -65,133 +35,116 @@ void Domino::repartirFichas()
     {
         nrandom = rand() % random;
         if (i < 7)
-            this->playerOne.push_back(this->drawPool[nrandom]);
+            this->_jugadores[0].pickFicha(this->_drawPool[nrandom]);
         else
-            this->playerTwo.push_back(this->drawPool[nrandom]);
+            this->_jugadores[1].pickFicha(this->_drawPool[nrandom]);
         random--;
-        this->drawPool.erase(this->drawPool.begin() + nrandom);
+        this->_drawPool.erase(this->_drawPool.begin() + nrandom);
     }
 }
 
-void Domino::mostrarTablero()
+std::string Domino::getTablero()
 {
-    this->tablero.printTablero();
+    return this->_tablero.getTablero();
 }
 
-bool Domino::debesRobar(int player)
+std::string Domino::ponerFicha(Ficha &ficha, char lado, int idJug)
 {
-    if (this->tablero.isEmpty())
-        return false;
-    else
+    if (this->_tablero.ponerFicha(ficha, lado))
     {
-        if (player == 1)
+        if (idJug == this->_jugadores[0].getID())
         {
-            for (size_t i = 0; i < this->playerOne.size(); i++)
-            {
-                if ((this->playerOne[i].getFirst() == this->tablero.getExtremoIzquierdo()) or (this->playerOne[i].getFirst() == this->tablero.getExtremoDerecho()))
-                    return false;
-                else if ((this->playerOne[i].getSecond() == this->tablero.getExtremoIzquierdo()) or (this->playerOne[i].getSecond() == this->tablero.getExtremoDerecho()))
-                    return false;
-            }
-            return true;
+            if (this->_jugadores[0].removeFicha(ficha))
+                return this->getTablero();
+            else
+                return "-Err. La ficha no puede ser colocada";
         }
         else
         {
-            for (size_t i = 0; i < this->playerTwo.size(); i++)
+            if (idJug == this->_jugadores[1].getID())
             {
-                if ((this->playerTwo[i].getFirst() == this->tablero.getExtremoIzquierdo()) or (this->playerTwo[i].getFirst() == this->tablero.getExtremoDerecho()))
-                    return false;
-                else if ((this->playerTwo[i].getSecond() == this->tablero.getExtremoIzquierdo()) or (this->playerTwo[i].getSecond() == this->tablero.getExtremoDerecho()))
-                    return false;
-            }
-            return true;
-        }
-    }
-}
-
-void Domino::ponerFicha(int player)
-{
-    int opt;
-    if (player == 1)
-    {
-        if (!debesRobar(1))
-        {
-            std::cout << "El tablero está así:" << std::endl;
-            this->mostrarTablero();
-            std::cout << std::endl;
-            this->printPlayer(1);
-            std::cout << "Seleccione una opción => ";
-            std::cin >> opt;
-            if (((opt - 1) > 0) and ((opt - 1) < this->playerOne.size()))
-            {
-                if (this->tablero.ponerFicha(this->playerOne[opt - 1]))
-                {
-                    this->playerOne.erase(this->playerOne.begin() + (opt - 1));
-                    if (this->playerOne.size() == 0)
-                    {
-                        std::cout << "Ha ganado el jugador 1" << std::endl;
-                        this->repartirFichas();
-                    }
-                }
+                if (this->_jugadores[1].removeFicha(ficha))
+                    return this->getTablero();
                 else
-                    std::cout << "No puedes poner esa ficha" << std::endl;
+                    return "-Err. La ficha no puede ser colocada";
             }
             else
-                std::cout << "Opción incorrecta" << std::endl;
-        }
-        else
-        {
-            std::cout << "No tienes fichas, debes robar" << std::endl;
+            {
+                return "-Err. La ficha no puede ser colocada";
+            }
+            
         }
     }
     else
-    {
-        if (!debesRobar(2))
-        {
-            std::cout << "El tablero está así:" << std::endl;
-            this->mostrarTablero();
-            std::cout << std::endl;
-            this->printPlayer(2);
-            std::cout << "Seleccione una opción => ";
-            std::cin >> opt;
-            if (((opt - 1) > 0) and ((opt - 1) < this->playerTwo.size()))
-            {
-                if (this->tablero.ponerFicha(this->playerTwo[opt - 1]))
-                {
-                    this->playerTwo.erase(this->playerTwo.begin() + (opt - 1));
-                    if (this->playerTwo.size() == 0)
-                    {
-                        std::cout << "Ha ganado el jugador 2" << std::endl;
-                        this->repartirFichas();
-                    }
-                }
-                else
-                    std::cout << "No puedes poner esa ficha" << std::endl;
-            }
-            else
-                std::cout << "Opción incorrecta" << std::endl;
-        }
-        else
-        {
-            std::cout << "No tienes fichas, debes robar" << std::endl;
-        }
-    }
+        return "-Err. La ficha no puede ser colocada";
+    return "Fallo";
 }
 
-void Domino::robarFicha(int player)
+std::string Domino::robarFicha(int idjug)
 {
     int nrandom;
+    std::string ficha = "FICHA ";
     srand(time(NULL));
-    if (player == 1)
+    nrandom = rand() % this->_drawPool.size();
+
+    if (this->_jugadores[0].getID() == idjug)
     {
-        nrandom = rand() % this->drawPool.size();
-        this->playerOne.push_back(this->drawPool[nrandom]);
-        this->drawPool.erase(this->drawPool.begin() + nrandom);
+        if (this->_jugadores[0].comprobarFicha(this->_tablero.left(), this->_tablero.right()))
+        {
+            return "+Ok. No es necesario robar ficha.";
+        }
+        else
+        {
+            this->_jugadores[0].pickFicha(this->_drawPool[nrandom]);
+            ficha += this->_drawPool[nrandom].getFicha();
+            this->_drawPool.erase(this->_drawPool.begin() + nrandom);
+            return ficha;
+        }
     }
+    if (this->_jugadores[1].getID() == idjug)
+    {
+        if (this->_jugadores[1].comprobarFicha(this->_tablero.left(), this->_tablero.right()))
+        {
+            return "+Ok. No es necesario robar ficha.";
+        }
+        else
+        {
+            this->_jugadores[1].pickFicha(this->_drawPool[nrandom]);
+            ficha += this->_drawPool[nrandom].getFicha();
+            this->_drawPool.erase(this->_drawPool.begin() + nrandom);
+            return ficha;
+        }
+    }
+    return "Fallo";
+}
+
+std::string Domino::getFichas(int idJug)
+{
+    std::vector<Ficha> fichasV;
+    std::string fichas = "FICHAS ";
+
+    if (idJug == this->_jugadores[0].getID())
+    {
+        fichasV = this->_jugadores[0].getFichas();
+        for (size_t i = 0; i < fichasV.size(); i++)
+            fichas += fichasV[i].getFicha();
+        return fichas;
+    }
+    if (idJug == this->_jugadores[1].getID())
+    {
+        fichasV = this->_jugadores[1].getFichas();
+        for (size_t i = 0; i < fichasV.size(); i++)
+            fichas += fichasV[i].getFicha();
+        return fichas;
+    }
+    return "Error";
+}
+
+bool Domino::siguePartida()
+{
+    if (this->_jugadores[0].getFichas().size() == 0 or this->_jugadores[1].getFichas().size() == 0)
+        return false;
     else
-    {
-        nrandom = rand() % this->drawPool.size();
-        this->playerTwo.push_back(this->drawPool[nrandom]);
-        this->drawPool.erase(this->drawPool.begin() + nrandom);
-    }
+        return true;
+    
 }

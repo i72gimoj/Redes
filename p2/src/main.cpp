@@ -2,65 +2,104 @@
 
 int main(int argc, char const *argv[])
 {
-    Domino partida;
-    int opt = 0;
+    std::string pet = "", aux;
+    Ficha ficha;
+    bool robado = false;
+    char lado;
+    int turno = 1;
+    Domino partida(1, 2);
 
-    while (opt != 9)
+    while (pet != "FIN")
     {
-        std::cout << "\n\n\n";
-        std::cout << "1. Mostrar tablero" << std::endl;
-        std::cout << "2. Mostrar draw pool" << std::endl;
-        std::cout << "3. Mostrar mano jugador 1" << std::endl;
-        std::cout << "4. Mostrar mano jugador 2" << std::endl;
-        std::cout << "5. Dar ficha jugador 1" << std::endl;
-        std::cout << "6. Dar ficha jugador 2" << std::endl;
-        std::cout << "7. Poner ficha jugador 1" << std::endl;
-        std::cout << "8. Poner ficha jugador 2" << std::endl;
-        std::cout << "9. Salir" << std::endl;
-        std::cout << "Introduzca la opción" << std::endl;
-        std::cin >> opt;
-        std::cout << "\n\n\n";
+        getline(std::cin, pet);
 
-        switch (opt)
+        aux = pet.substr(0, pet.find_first_of(" "));
+
+        if (aux == "COLOCAR-FICHA")
         {
-        case 1:
-            partida.mostrarTablero();
-            break;
+            aux = pet.substr(pet.find_first_of("|"));
+            ficha.setFirst(aux[1] - '0');
+            ficha.setSecond(aux[3] - '0');
+            lado = aux[5];
 
-        case 2:
-            partida.mostrarDrawPool();
-            break;
+            std::cout << lado << std::endl;
 
-        case 3:
-            partida.printPlayer(1);
-            break;
+            if (turno == 1)
+            {
+                if ((aux = partida.ponerFicha(ficha, lado, 1)) != "-Err. La ficha no puede ser colocada")
+                {
+                    if (robado)
+                        robado = false;
 
-        case 4:
-            partida.printPlayer(2);
-            break;
+                    turno = 2;
+                }
+                std::cout << aux << std::endl;
+            }
+            else
+            {
+                if ((aux = partida.ponerFicha(ficha, lado, 2)) != "-Err. La ficha no puede ser colocada")
+                {
+                    if (robado)
+                        robado = false;
+                    turno = 1;
+                }
+                std::cout << aux << std::endl;
+            }
+        }
+        else
+        {
+            if (aux == "ROBAR-FICHA")
+            {
+                if (robado)
+                    std::cout << "Ya ha robado, si no puede colocar pase turno" << std::endl;
+                else
+                {
+                    if (turno == 1)
+                    {
+                        std::cout << partida.robarFicha(1) << std::endl;
+                        robado = true;
+                    }
+                    else
+                    {
+                        std::cout << partida.robarFicha(2) << std::endl;
+                        robado = true;
+                    }
+                }
+            }
+            else
+            {
+                if (aux == "PASO-TURNO")
+                {
+                    if (robado)
+                        robado = false;
 
-        case 5:
-            partida.robarFicha(1);
-            break;
+                    if (turno == 1)
+                        turno = 2;
+                    else
+                        turno = 1;
+                }
+                else
+                {
+                    std::cout << "-ERR" << std::endl;
+                }
+                
+            }
+        }
 
-        case 6:
-            partida.robarFicha(2);
-            break;
+        std::cout << "Turno del jugador " << turno << std::endl;
 
-        case 7:
-            partida.ponerFicha(1);
-            break;
+        std::cout << "JUG1 " << partida.getFichas(1) << std::endl;
+        std::cout << "JUG2 " << partida.getFichas(2) << std::endl << std::endl;
 
-        case 8:
-            partida.ponerFicha(2);
-            break;
+        if (!partida.siguePartida())
+        {
+            if (turno == 1)
+                turno == 2;
+            else
+                turno == 1;
 
-        case 9:
-            std::cout << "Saliendo" << std::endl;
-            break;
-
-        default:
-            break;
+            std::cout << "La partida ha finalizado, ha ganado el jugador " << turno << std::endl;
+            pet = "FIN";
         }
     }
 

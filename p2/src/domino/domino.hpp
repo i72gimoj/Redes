@@ -2,32 +2,35 @@
 #define DOMINO_HPP
 
 #include "ficha.hpp"
+#include "jugador.hpp"
 #include "tablero.hpp"
 
 #include <vector>
 
-#include <time.h>
 #include <stdio.h>
+#include <time.h>
 
 class Domino
 {
-private:
-    std::vector<Ficha> drawPool;
-    std::vector<Ficha> playerOne;
-    std::vector<Ficha> playerTwo;
-    Tablero tablero;
+  private:
+    std::vector<Ficha> _drawPool;
+    std::vector<Jugador> _jugadores;
+    Tablero _tablero;
     void generarFichas();
-
-public:
-    Domino();
-    bool debesRobar(int player);
-    void mostrarTablero();
-    void ponerFicha(int player);
-    void printPlayer(int player);
-    void mostrarDrawPool();
-    bool estanRepartidas();
     void repartirFichas();
-    void robarFicha(int player);
+
+  public:
+    Domino(int idjug1, int idjug2);
+
+    std::string getFichas(int idJug);
+
+    std::string getTablero();
+
+    bool siguePartida();
+
+    std::string ponerFicha(Ficha &ficha, char lado, int idJug);
+
+    std::string robarFicha(int idJug);
 };
 
 #endif
