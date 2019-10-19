@@ -6,31 +6,26 @@
 
 class Tablero
 {
-private:
-    std::vector<Ficha> tablero;
-    int extremoIzquierdo;
-    int extremoDerecho;
+  private:
+    std::vector<Ficha> _tablero;
+    int _left;
+    int _right;
 
-public:
+  public:
     Tablero();
-    bool ponerFicha(Ficha ficha);
-    void printTablero();
-    inline int getExtremoDerecho() const
+
+    std::string getTablero();
+
+    bool ponerFicha(Ficha &ficha, char lado);
+
+    inline const int left()
     {
-        return this->extremoDerecho;
+        return this->_left;
     }
 
-    inline bool isEmpty() const
+    inline const int right()
     {
-        if (this->tablero.size() == 0)
-            return true;
-        else
-            return false;
-    }
-
-    inline int getExtremoIzquierdo() const
-    {
-        return this->extremoIzquierdo;
+        return this->_right;
     }
 };
 
