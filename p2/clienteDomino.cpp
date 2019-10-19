@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
-#include <time.h>
+#include <ctime>
 #include <arpa/inet.h>
 
 using namespace std;
@@ -81,13 +81,14 @@ int main ( )
             bzero(buffer,sizeof(buffer));
             recv(sd,buffer,sizeof(buffer),0);
             
-            printf("\n%s\n",buffer);
+            cout<<"\n"<<buffer<<endl;
             
             if(strcmp(buffer,"Demasiados clientes conectados\n") == 0)
                 fin =1;
             
             if(strcmp(buffer,"Desconexion servidor\n") == 0)
                 fin =1;
+
             
         }
         else
@@ -96,11 +97,13 @@ int main ( )
             if(FD_ISSET(0,&auxfds)){
                 bzero(buffer,sizeof(buffer));
                 fgets(buffer,sizeof(buffer),stdin);
-               
+                
                 if(strcmp(buffer,"SALIR\n") == 0){
+						cout<<"+Ok. Desconexion procesada"<<endl;
                         fin = 1;
                 }
-                send(sd,buffer,sizeof(buffer),0);
+				send(sd,buffer,sizeof(buffer),0);
+                
             }
         }	
     }while(fin == 0);
