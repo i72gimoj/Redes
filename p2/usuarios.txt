@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 user pass
 javi pw
+=======
+	@ABCDEFG
+>>>>>>> 81b2f3e41886798967d03a53ff087879a7521781
