@@ -20,14 +20,19 @@
 #define MSG_SIZE 250
 #define MAX_CLIENTS 30
 
+using namespace std;
+
 struct Mesa
 {
     int jugador1=-1;
     int jugador2=-1;
-    
+    bool partida=false;
 }mesa[15];
 
-using namespace std;
+struct Jugador{
+    int sk;
+    bool validado=false;
+}jugador[MAX_CLIENTS];
 
 /*
  * El servidor ofrece el servicio de un chat para el domino, donde solo se meten comandos
@@ -36,7 +41,7 @@ using namespace std;
 bool existeUsuario(char *);
 bool existeContrasena(char*,char*);
 void manejador(int signum);
-void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[], char usuario[30], char pass[30]);
+void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[], char usuario[30], char pass[30])/*, int socket_companero[], bool partida)*/;
 
 int main()
 {
@@ -54,8 +59,8 @@ int main()
     char identificador[MSG_SIZE];
     int usuario_espera;
     bool validado=false;
-    bool partida=false;
-    
+    int user_esp=0;
+    int socket_companero[2];
     
 
     //eliminar para dejar el fichero con los usuarios y que solo necesites meter el usuario para entrar
@@ -189,7 +194,7 @@ int main()
                             if (strcmp(buffer, "SALIR\n") == 0)
                             {
 
-                                salirCliente(i, &readfds, &numClientes, arrayClientes, registro.usuario, registro.pass);
+                                salirCliente(i, &readfds, &numClientes, arrayClientes, registro.usuario, registro.pass)/*, socket_companero, mesa[i].partida)*/;
                             }
                             else
                             {
@@ -274,11 +279,12 @@ int main()
                                 }
                                 else if ((strcmp(almacenar[0], "INICIAR-PARTIDA") == 0) && (validado == true))
                                 {
-                                    if (numClientes % 2 == 0)
+                                    if (user_esp%2!=0)
                                     {
                                         strcpy(buffer, "+Ok. Empieza la partida\n");
-                                        partida=true;
+                                        mesa[i].partida=true;
                                         send(new_sd, buffer, strlen(buffer), 0);
+                                        //socket_companero[1]=new_sd;
                                         for(j=0; j<numClientes; j++)
                                             if(arrayClientes[j]==usuario_espera)
                                                 send(arrayClientes[j], buffer, strlen(buffer), 0);
@@ -287,6 +293,8 @@ int main()
                                     {
                                         strcpy(buffer, "+Ok. Peticion recibida. Quedamos a la espera de mas jugadores\n");
                                         usuario_espera=new_sd;
+                                        user_esp++;
+                                       // socket_companero[0]=new_sd;
                                         send(new_sd, buffer, strlen(buffer), 0);
                                     }
                                 }
@@ -326,7 +334,7 @@ int main()
                         {
                             cout << "El socket " << i << " ha introducido ctrl+c" << endl;
                             //Eliminar ese socket
-                            salirCliente(i, &readfds, &numClientes, arrayClientes, registro.usuario, registro.pass);
+                            salirCliente(i, &readfds, &numClientes, arrayClientes, registro.usuario, registro.pass)/*, socket_companero, mesa[i].partida)*/;
                         }
                     }
                 }
@@ -366,7 +374,7 @@ bool existeContrasena(char* usuario, char* contrasena){
     return valor;
 }
 
-void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[], char usuario[30], char pass[30])
+void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[], char usuario[30], char pass[30])/*, int socket_companero[2], bool partida)*/
 {
 
     char buffer[250];
@@ -384,12 +392,14 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClient
 
     (*numClientes)--;
 
-    bzero(buffer, sizeof(buffer));
-    sprintf(buffer, "+Ok. La partida ha sido anulada\n");
-
-    for (j = 0; j < (*numClientes); j++)
+   // if(partida==true){
+        bzero(buffer, sizeof(buffer));
+        sprintf(buffer, "+Ok. La partida ha sido anulada\n");
+        for(int k=0; k<2; k++)
+            for (j = 0; j < (*numClientes); j++)
         if (arrayClientes[j] != socket)
             send(arrayClientes[j], buffer, strlen(buffer), 0);
+    //}
 }
 
 void manejador(int signum)
