@@ -34,6 +34,8 @@ struct Jugador{
     bool validado=false;
 }jugador[MAX_CLIENTS];
 
+int user_esp=0;
+
 /*
  * El servidor ofrece el servicio de un chat para el domino, donde solo se meten comandos
  */
@@ -59,7 +61,7 @@ int main()
     char identificador[MSG_SIZE];
     int usuario_espera;
     bool validado=false;
-    int user_esp=0;
+    
     int socket_companero[2];
     
 
@@ -198,7 +200,7 @@ int main()
                             }
                             else
                             {
-                                ///////////////////////////////////////////////
+                                //Separa la cadena en palabras
                                 char almacenar[20][20];
                                 int num_palabras = 0;
                                 int pos = 0;
@@ -272,19 +274,22 @@ int main()
                                             validado = true;
                                         }
                                         else{
-                                            sprintf(buffer,"-ERR. Error en la contrasena\n");
+                                            strcpy(buffer,"-ERR. Error en la contrasena\n");
                                         }
                                     }
                                     send(new_sd, buffer, strlen(buffer), 0);
                                 }
                                 else if ((strcmp(almacenar[0], "INICIAR-PARTIDA") == 0) && (validado == true))
                                 {
-                                    if (user_esp%2!=0)
+                                    if (user_esp==1)
                                     {
                                         strcpy(buffer, "+Ok. Empieza la partida\n");
                                         mesa[i].partida=true;
                                         send(new_sd, buffer, strlen(buffer), 0);
+                                        user_esp--;
                                         //socket_companero[1]=new_sd;
+                                        mesa[i].jugador1=usuario_espera;
+                                        mesa[i].jugador2=new_sd;
                                         for(j=0; j<numClientes; j++)
                                             if(arrayClientes[j]==usuario_espera)
                                                 send(arrayClientes[j], buffer, strlen(buffer), 0);
@@ -299,7 +304,7 @@ int main()
                                     }
                                 }
 
-                               /* else if(((strcmp(almacenar[0],"COLOCAR-FICHA")==0) && (isdigit(atoi(almacenar[1]))) && (isdigit(atoi(almacenar[2]))) && ((strcmp(almacenar[2],"izquierda")) || (strcmp(almacenar[2],"derecha"))) && (partida==true))){
+                               /*else if(((strcmp(almacenar[0],"COLOCAR-FICHA")==0) && (isdigit(atoi(almacenar[1]))) && (isdigit(atoi(almacenar[2]))) && ((strcmp(almacenar[2],"izquierda")) || (strcmp(almacenar[2],"derecha"))) && (partida==true))){
                                         
                                     }
 
@@ -322,8 +327,7 @@ int main()
                                         }
                                     }*/
                                 ///-------------------------------------------------
-                                else
-                                {
+                                else{
                                     strcpy(buffer, "-ERR. Comando invalido\n");
                                     send(new_sd, buffer, strlen(buffer), 0);
                                 }
@@ -394,11 +398,11 @@ void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClient
 
    // if(partida==true){
         bzero(buffer, sizeof(buffer));
-        sprintf(buffer, "+Ok. La partida ha sido anulada\n");
+        strcpy(buffer, "+Ok. La partida ha sido anulada\n");
         for(int k=0; k<2; k++)
             for (j = 0; j < (*numClientes); j++)
-        if (arrayClientes[j] != socket)
-            send(arrayClientes[j], buffer, strlen(buffer), 0);
+                if (arrayClientes[j] != socket)
+                    send(arrayClientes[j], buffer, strlen(buffer), 0);
     //}
 }
 
