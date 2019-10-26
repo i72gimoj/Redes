@@ -39,8 +39,8 @@ int user_esp=0;
 /*
  * El servidor ofrece el servicio de un chat para el domino, donde solo se meten comandos
  */
-
-bool existeUsuario(char *);
+bool UsuarioConectado(char*,string);
+bool existeUsuario(char *, string);
 bool existeContrasena(char*,char*);
 void manejador(int signum);
 void salirCliente(int socket, fd_set *readfds, int *numClientes, int arrayClientes[], char usuario[30], char pass[30])/*, int socket_companero[], bool partida)*/;
@@ -68,6 +68,8 @@ int main()
     //eliminar para dejar el fichero con los usuarios y que solo necesites meter el usuario para entrar
     ofstream fichero("usuarios.txt", ios::trunc);
     fichero.close();
+    ofstream fich("conectados.txt", ios::trunc);
+    fich.close();
 
     struct Registro
     {
@@ -228,18 +230,18 @@ int main()
                                 if ((strcmp(almacenar[0], "REGISTRO") == 0) && (strcmp(almacenar[1], "-u") == 0) && (strcmp(almacenar[3], "-p") == 0))
                                 {
                                     ofstream fich("usuarios.txt", ios::app);
-                                    if (!existeUsuario(almacenar[2]))
+                                    if (!existeUsuario(almacenar[2],"usuarios.txt"))
                                     {
                                         strcpy(buffer, "+Ok. Usuario validado\n");
                                         strcpy(registro.usuario, almacenar[2]);
                                         strcpy(registro.pass, almacenar[4]);
                                         fich << almacenar[2] << " " << almacenar[4] << endl;
-                                        send(new_sd, buffer, strlen(buffer), 0);
+                                        send(i, buffer, strlen(buffer), 0);
                                     }
                                     else
                                     {
                                         strcpy(buffer, "-ERR. Error al registrar\n");
-                                        send(new_sd, buffer, strlen(buffer), 0);
+                                        send(i, buffer, strlen(buffer), 0);
                                     }
                                     fich.close();
                                 }
@@ -247,16 +249,19 @@ int main()
                                 else if (strcmp(almacenar[0], "USUARIO") == 0)
                                 {
                                     bzero(registro.usuario, sizeof(registro.usuario));
-                                    if (existeUsuario(almacenar[1]))
+                                    if (existeUsuario(almacenar[1],"usuarios.txt") && !UsuarioConectado(almacenar[1], "conectados.txt"))
                                     {
                                         strcpy(buffer, "+Ok. Usuario correcto\n");
                                         strcpy(registro.usuario, almacenar[1]);
-                                        send(new_sd, buffer, strlen(buffer), 0);
+                                        ofstream fich("conectados.txt", ios::app);
+                                        fich << almacenar[1] << endl;
+                                        fich.close();
+                                        send(i, buffer, strlen(buffer), 0);
                                     }
                                     else
                                     {
                                         strcpy(buffer, "-ERR. Usuario incorrecto\n");
-                                        send(new_sd, buffer, strlen(buffer), 0);
+                                        send(i, buffer, strlen(buffer), 0);
                                     }
                                 }
                                 else if (strcmp(almacenar[0], "PASSWORD") == 0)
@@ -277,7 +282,7 @@ int main()
                                             strcpy(buffer,"-ERR. Error en la contrasena\n");
                                         }
                                     }
-                                    send(new_sd, buffer, strlen(buffer), 0);
+                                    send(i, buffer, strlen(buffer), 0);
                                 }
                                 else if ((strcmp(almacenar[0], "INICIAR-PARTIDA") == 0) && (validado == true))
                                 {
@@ -285,7 +290,7 @@ int main()
                                     {
                                         strcpy(buffer, "+Ok. Empieza la partida\n");
                                         mesa[i].partida=true;
-                                        send(new_sd, buffer, strlen(buffer), 0);
+                                        send(i, buffer, strlen(buffer), 0);
                                         user_esp--;
                                         //socket_companero[1]=new_sd;
                                         mesa[i].jugador1=usuario_espera;
@@ -300,7 +305,7 @@ int main()
                                         usuario_espera=new_sd;
                                         user_esp++;
                                        // socket_companero[0]=new_sd;
-                                        send(new_sd, buffer, strlen(buffer), 0);
+                                        send(i, buffer, strlen(buffer), 0);
                                     }
                                 }
 
@@ -350,9 +355,23 @@ int main()
     return 0;
 }
 
-bool existeUsuario(char *usuario)
+bool UsuarioConectado(char *usuario, string fichero)
 {
-    ifstream fe("usuarios.txt");
+    ifstream fe(fichero);
+    bool valor = false;
+    char user[20];
+    while (!fe.eof())
+    {
+        fe >> user;
+        if (strcmp(user, usuario) == 0)
+            valor = true;
+    }
+    fe.close();
+    return valor;
+}
+bool existeUsuario(char *usuario, string fichero)
+{
+    ifstream fe(fichero);
     bool valor = false;
     char user[20], contrasena[20];
     while (!fe.eof())
