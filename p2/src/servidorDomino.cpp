@@ -366,10 +366,10 @@ int main()
 
                                     Ficha ficha(bufferS[15] - '0', bufferS[17] - '0');
                                     cout << ficha.getFicha() << std::endl;
-                                    cout << bufferS.substr(18, bufferS.size()) << std::endl;
+                                    cout << bufferS.substr(19, bufferS.size()) << std::endl;
                                     while (cont < jugadores.size() and salir == false)
                                     {
-                                        if (jugadores[cont].id == i and i == jugadores[cont].mesa->turno)
+                                        if (jugadores[cont].id == i)
                                         {
 
                                             send(i, mesa.partidaD.getTablero().c_str(),
@@ -377,28 +377,29 @@ int main()
                                             send(i, mesa.partidaD.getFichas(i).c_str(),
                                                  strlen(mesa.partidaD.getFichas(i).c_str()), 0);
 
-                                            strcpy(buffer, jugadores[cont]
-                                                               .mesa->partidaD
-                                                               .ponerFicha(ficha, bufferS.substr(22, bufferS.size()), i)
-                                                               .c_str());
+                                            bufferS = bufferS.substr(19, bufferS.size());
+
+                                            strcpy(
+                                                buffer,
+                                                jugadores[cont].mesa->partidaD.ponerFicha(ficha, bufferS, i).c_str());
                                             salir = true;
                                             if (strcmp(buffer, "-Err. La ficha no puede ser colocada\n") == 0)
                                             {
                                                 send(i, buffer, strlen(buffer), 0);
                                                 salir = true;
                                             }
-                                            else if (i != jugadores[cont].mesa->jugador1)
-                                            {
-                                                jugadores[cont].mesa->turno = jugadores[cont].mesa->jugador1;
-                                                send(jugadores[cont].mesa->jugador1, buffer, strlen(buffer), 0);
-                                                salir = true;
-                                            }
-                                            else
-                                            {
-                                                jugadores[cont].mesa->turno = jugadores[cont].mesa->jugador2;
-                                                send(jugadores[cont].mesa->jugador2, buffer, strlen(buffer), 0);
-                                                salir = true;
-                                            }
+                                            // else if (i != jugadores[cont].mesa->jugador1)
+                                            // {
+                                            //     jugadores[cont].mesa->turno = jugadores[cont].mesa->jugador1;
+                                            //     send(jugadores[cont].mesa->jugador1, buffer, strlen(buffer), 0);
+                                            //     salir = true;
+                                            // }
+                                            // else
+                                            // {
+                                            //     jugadores[cont].mesa->turno = jugadores[cont].mesa->jugador2;
+                                            //     send(jugadores[cont].mesa->jugador2, buffer, strlen(buffer), 0);
+                                            //     salir = true;
+                                            // }
                                         }
                                         cont++;
                                     }
