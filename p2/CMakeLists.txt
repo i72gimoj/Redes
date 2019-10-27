@@ -8,6 +8,8 @@ include_directories(src/domino src/domino/jugador src/domino/ficha src/domino/ta
 
 link_libraries(allfuncs)
 
+add_executable(main src/main.cpp)
+
 add_executable(cliente src/clienteDomino.cpp)
 
 add_executable(servidor src/servidorDomino.cpp)

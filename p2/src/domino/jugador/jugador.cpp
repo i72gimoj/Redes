@@ -1,6 +1,15 @@
+/**
+ * @file jugador.cpp
+ * @author Iván Rodríguez Aguayo (i72roagi@uco.es)
+ * @brief Fichero del código de las funciones no inline de la clase Jugador
+ * @version 1.0
+ * @date 18-10-2019
+ * @copyright Copyright (c) 2019
+ */
+
 #include "jugador.hpp"
 
-bool Jugador::removeFicha(Ficha &ficha)
+bool JugadorD::removeFicha(Ficha &ficha)
 {
     for (size_t i = 0; i < this->_fichas.size(); i++)
     {
@@ -13,7 +22,15 @@ bool Jugador::removeFicha(Ficha &ficha)
     return false;
 }
 
-bool Jugador::comprobarFicha(int left, int right)
+bool JugadorD::comprobarFicha(Ficha &ficha)
+{
+    for (size_t i = 0; i < this->_fichas.size(); i++)
+        if (this->_fichas[i] == ficha)
+            return true;
+    return false;
+}
+
+bool JugadorD::comprobarFicha(int left, int right)
 {
     for (size_t i = 0; i < this->_fichas.size(); i++)
     {

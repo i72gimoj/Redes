@@ -1,29 +1,50 @@
+/**
+ * @file domino.cpp
+ * @author Iván Rodríguez Aguayo (i72roagi@uco.es)
+ * @brief Fichero con el código de las funciones no inline de la clase Domino
+ * @version 1.0
+ * @date 18-10-2019
+ * @copyright Copyright (c) 2019
+ */
+
 #include "domino.hpp"
 
-Domino::Domino(int idjug1, int idjug2)
+Domino::Domino(int idjug1, int idjug2, int &turno)
 {
-    this->_jugadores.push_back(Jugador(idjug1));
-    this->_jugadores.push_back(Jugador(idjug2));
+    this->_jugadores.push_back(JugadorD(idjug1));
+    this->_jugadores.push_back(JugadorD(idjug2));
     this->generarFichas();
     this->repartirFichas();
+    turno = this->decidirTurno();
 }
 
 void Domino::generarFichas()
 {
-    int x = 0, y = 0;
-    Ficha ficha(x, y);
+    int x = 6, y = 6;
+    Ficha ficha;
+    for (int i = 6; i >= 0; i--)
+    {
+        ficha.setFirst(i);
+        ficha.setSecond(i);
+        this->_drawPool.push_back(ficha);
+    }
+
     for (size_t i = 0; i < 28; i++)
     {
-        ficha.setFirst(x);
-        ficha.setSecond(y);
-        this->_drawPool.push_back(ficha);
-        if (y == 6)
+        if (x != y)
         {
-            y = x;
-            x++;
+            ficha.setFirst(x);
+            ficha.setSecond(y);
+            this->_drawPool.push_back(ficha);
+            if (y == 0)
+            {
+                y = x;
+                x--;
+            }
         }
-        y++;
+        y--;
     }
+    this->_todas = this->_drawPool;
 }
 
 void Domino::repartirFichas()
@@ -48,7 +69,7 @@ std::string Domino::getTablero()
     return this->_tablero.getTablero();
 }
 
-std::string Domino::ponerFicha(Ficha &ficha, char lado, int idJug)
+std::string Domino::ponerFicha(Ficha &ficha, std::string lado, int idJug)
 {
     if (this->_tablero.ponerFicha(ficha, lado))
     {
@@ -72,7 +93,6 @@ std::string Domino::ponerFicha(Ficha &ficha, char lado, int idJug)
             {
                 return "-Err. La ficha no puede ser colocada";
             }
-            
         }
     }
     else
@@ -146,5 +166,46 @@ bool Domino::siguePartida()
         return false;
     else
         return true;
-    
+}
+
+void insertarFicha(std::vector<Ficha> &fichas, Ficha &ficha)
+{
+    if (fichas.size() == 0)
+        fichas.push_back(ficha);
+    else
+    {
+        if (ficha.esDoble())
+        {
+            int i = 0;
+            while (fichas[i].esDoble() and i < fichas.size())
+            {
+                if (ficha.getFirst() > fichas[i].getFirst())
+                    fichas.insert(fichas.begin() + i, ficha);
+                i++;
+            }
+            fichas.insert(fichas.begin() + i - 1, ficha);
+        }
+        else
+        {
+            for (size_t i = 0; i < fichas.size(); i++)
+                if (!fichas[i].esDoble() && ficha > fichas[i])
+                    fichas.insert(fichas.begin() + i, ficha);
+            fichas.push_back(ficha);
+        }
+    }
+}
+
+int Domino::decidirTurno()
+{
+    for (size_t i = 0; i < this->_todas.size(); i++)
+    {
+        if (this->_jugadores[0].comprobarFicha(this->_todas[i]))
+            return this->_jugadores[0].getID();
+        else
+        {
+            if (this->_jugadores[1].comprobarFicha(this->_todas[i]))
+                return this->_jugadores[1].getID();
+        }
+    }
+    return -1;
 }

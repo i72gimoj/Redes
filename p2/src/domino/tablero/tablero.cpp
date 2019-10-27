@@ -1,3 +1,12 @@
+/**
+ * @file tablero.cpp
+ * @author Iván Rodríguez Aguayo (i72roagi@uco.es)
+ * @brief Fichero con el código de las funciones no inline de la clase Tablero
+ * @version 1.0
+ * @date 18-10-2019
+ * @copyright Copyright (c) 2019
+ */
+
 #include "tablero.hpp"
 
 Tablero::Tablero()
@@ -21,7 +30,7 @@ std::string Tablero::getTablero()
     return tablero;
 }
 
-bool Tablero::ponerFicha(Ficha &ficha, char lado)
+bool Tablero::ponerFicha(Ficha &ficha, std::string lado)
 {
     if (this->_tablero.size() == 0)
     {
@@ -32,7 +41,7 @@ bool Tablero::ponerFicha(Ficha &ficha, char lado)
     }
     else
     {
-        if (lado == 'I')
+        if (lado == "izquierda")
         {
             if (ficha.getSecond() == this->left())
             {
@@ -45,7 +54,7 @@ bool Tablero::ponerFicha(Ficha &ficha, char lado)
         }
         else
         {
-            if (lado == 'D')
+            if (lado == "derecha")
             {
                 if (ficha.getFirst() == this->right())
                 {
@@ -58,4 +67,5 @@ bool Tablero::ponerFicha(Ficha &ficha, char lado)
             }
         }
     }
+    return false;
 }
