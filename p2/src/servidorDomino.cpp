@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cctype>
 
 #include "domino.hpp"
 
@@ -202,7 +203,7 @@ int main()
                             if (strcmp(buffer, "SALIR\n") == 0)
                             {
 
-                                salirCliente(i, &readfds, jugadores) /*, socket_companero, mesa[i].partida)*/;
+                                salirCliente(i, &readfds, jugadores);
                             }
                             else
                             {
@@ -251,7 +252,6 @@ int main()
                                     }
                                     fich.close();
                                 }
-
                                 else if (strcmp(almacenar[0], "USUARIO") == 0)
                                 {
                                     bzero(registro.usuario, sizeof(registro.usuario));
@@ -334,6 +334,20 @@ int main()
                                             strcpy(buffer, "+Ok. Empieza la partida, turno del rival\n");
                                             send(usuario_espera, buffer, strlen(buffer), 0);
                                         }
+                                        for (size_t i = 0; i < mesas.size(); i++)
+                                        {
+                                            if (mesas[i].jugador1 == i or mesas[i].jugador2 == i)
+                                                mesa = mesas[i];
+                                        }
+
+                                        send(i, mesa.partidaD.getTablero().c_str(),
+                                             strlen(mesa.partidaD.getTablero().c_str()), 0);
+                                        send(usuario_espera, mesa.partidaD.getTablero().c_str(),
+                                             strlen(mesa.partidaD.getTablero().c_str()), 0);
+                                        send(i, mesa.partidaD.getFichas(i).c_str(),
+                                             strlen(mesa.partidaD.getFichas(i).c_str()), 0);
+                                        send(usuario_espera, mesa.partidaD.getFichas(usuario_espera).c_str(),
+                                             strlen(mesa.partidaD.getFichas(usuario_espera).c_str()), 0);
                                     }
                                     else
                                     {
@@ -345,10 +359,8 @@ int main()
                                         send(i, buffer, strlen(buffer), 0);
                                     }
                                 }
-
-                                else if (((strcmp(almacenar[0], "COLOCAR-FICHA") == 0) and
-                                          (isdigit(atoi(almacenar[1]))) and (isdigit(atoi(almacenar[2]))) and
-                                          ((strcmp(almacenar[3], "izquierda")) or (strcmp(almacenar[3], "derecha")))))
+                                else if ((strcmp(almacenar[0], "COLOCAR-FICHA") == 0)/* &&
+                                          ((strcmp(almacenar[3], "izquierda") == 0) || (strcmp(almacenar[3], "derecha") == 0))*/)
                                 {
                                     int cont = 0;
                                     bool salir = false;
@@ -357,11 +369,17 @@ int main()
                                     {
                                         if (jugadores[cont].id == i and i == jugadores[cont].mesa->turno)
                                         {
+
+                                            send(i, mesa.partidaD.getTablero().c_str(),
+                                                 strlen(mesa.partidaD.getTablero().c_str()), 0);
+                                            send(i, mesa.partidaD.getFichas(i).c_str(),
+                                                 strlen(mesa.partidaD.getFichas(i).c_str()), 0);
+
                                             strcpy(buffer, jugadores[cont]
                                                                .mesa->partidaD.ponerFicha(ficha, almacenar[3], i)
                                                                .c_str());
                                             salir = true;
-                                            if (strcmp(buffer, "-Err. La ficha no puede ser colocada") == 0)
+                                            if (strcmp(buffer, "-Err. La ficha no puede ser colocada\n") == 0)
                                             {
                                                 send(i, buffer, strlen(buffer), 0);
                                                 salir = true;
@@ -382,7 +400,6 @@ int main()
                                         cont++;
                                     }
                                 }
-
                                 else if (strcmp(buffer, "ROBAR-FICHA") == 0)
                                 {
                                     Jugador jugador;
@@ -396,8 +413,8 @@ int main()
                                             if (jugador.robadas == 1)
                                             {
                                                 salir = true;
-                                                send(i, "-Err. Ya ha robado una ficha.",
-                                                     strlen("-Err. Ya ha robado una ficha."), 0);
+                                                send(i, "-Err. Ya ha robado una ficha.\n",
+                                                     strlen("-Err. Ya ha robado una ficha.\n"), 0);
                                                 robado = true;
                                             }
                                             else
@@ -412,7 +429,7 @@ int main()
                                         {
                                             strcpy(buffer, jugadores[cont].mesa->partidaD.robarFicha(i).c_str());
                                             salir = true;
-                                            if (strcmp(buffer, "+Ok. No es necesario robar ficha.") == 0)
+                                            if (strcmp(buffer, "+Ok. No es necesario robar ficha.\n") == 0)
                                             {
                                                 send(i, buffer, strlen(buffer), 0);
                                                 robado = true;
@@ -521,7 +538,7 @@ bool existeContrasena(char *usuario, char *contrasena)
     return valor;
 }
 
-void salirCliente(int socket, fd_set *readfds, vector<Jugador> &jugadores) /*, int socket_companero[2], bool partida)*/
+void salirCliente(int socket, fd_set *readfds, vector<Jugador> &jugadores) 
 {
 
     char buffer[250];
