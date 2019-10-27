@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <cctype>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
@@ -11,7 +12,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <cctype>
 
 #include "domino.hpp"
 
@@ -203,7 +203,7 @@ int main()
                             if (strcmp(buffer, "SALIR\n") == 0)
                             {
 
-                                salirCliente(i, &readfds, jugadores);
+                                // salirCliente(i, &readfds, jugadores);
                             }
                             else
                             {
@@ -226,9 +226,9 @@ int main()
                                 almacenar[num_palabras][pos] = '\0';
 
                                 //////////////////////////////////////////////////
-                                sprintf(identificador, "%d: %s", i, buffer);
-                                bzero(buffer, sizeof(buffer));
-                                strcpy(buffer, identificador);
+                                // sprintf(identificador, "%d: %s", i, buffer);
+                                // bzero(buffer, sizeof(buffer));
+                                // strcpy(buffer, identificador);
 
                                 //-------------------------------------------------
 
@@ -358,13 +358,15 @@ int main()
                                         send(i, buffer, strlen(buffer), 0);
                                     }
                                 }
-                                else if ((strcmp(almacenar[0], "COLOCAR-FICHA") == 0) && (isdigit(atoi(almacenar[1]))) &&
-                                          (isdigit(atoi(almacenar[2]))) && 
-                                          ((strcmp(almacenar[3], "izquierda") == 0) || (strcmp(almacenar[3], "derecha") == 0)))
+                                else if ((strcmp(almacenar[0], "COLOCAR-FICHA") == 0))
                                 {
                                     int cont = 0;
                                     bool salir = false;
-                                    Ficha ficha(atoi(almacenar[1]), atoi(almacenar[2]));
+                                    string bufferS = buffer;
+
+                                    Ficha ficha(bufferS[15] - '0', bufferS[17] - '0');
+                                    cout << ficha.getFicha() << std::endl;
+                                    cout << bufferS.substr(18, bufferS.size()) << std::endl;
                                     while (cont < jugadores.size() and salir == false)
                                     {
                                         if (jugadores[cont].id == i and i == jugadores[cont].mesa->turno)
@@ -376,7 +378,8 @@ int main()
                                                  strlen(mesa.partidaD.getFichas(i).c_str()), 0);
 
                                             strcpy(buffer, jugadores[cont]
-                                                               .mesa->partidaD.ponerFicha(ficha, almacenar[3], i)
+                                                               .mesa->partidaD
+                                                               .ponerFicha(ficha, bufferS.substr(22, bufferS.size()), i)
                                                                .c_str());
                                             salir = true;
                                             if (strcmp(buffer, "-Err. La ficha no puede ser colocada\n") == 0)
@@ -473,9 +476,8 @@ int main()
                                 ///-------------------------------------------------
                                 else
                                 {
-                                    for(int k=0; k<num_palabras; k++)
-                                        cout<<almacenar[k]<<" ";
-                                    strcpy(buffer, "-ERR. Comando invalido\n");
+                                    for (int k = 0; k < num_palabras; k++)
+                                        strcpy(buffer, "-ERR. Comando invalido\n");
                                     send(i, buffer, strlen(buffer), 0);
                                 }
                             }
@@ -540,7 +542,7 @@ bool existeContrasena(char *usuario, char *contrasena)
     return valor;
 }
 
-void salirCliente(int socket, fd_set *readfds, vector<Jugador> &jugadores) 
+void salirCliente(int socket, fd_set *readfds, vector<Jugador> &jugadores)
 {
 
     char buffer[250];
