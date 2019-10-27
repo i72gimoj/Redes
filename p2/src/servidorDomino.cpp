@@ -213,8 +213,7 @@ int main()
                                 int pos = 0;
                                 for (int h = 0; h < (int)strlen(buffer); h++)
                                 {
-                                    if ((buffer[h] == ' ') || (buffer[h] == '|') || (buffer[h] == ',') ||
-                                        (buffer[h] == '\n'))
+                                    if ((buffer[h] == ' ') || (buffer[h] == '\n'))
                                     {
                                         almacenar[num_palabras][pos] = '\0';
                                         num_palabras++;
@@ -359,8 +358,9 @@ int main()
                                         send(i, buffer, strlen(buffer), 0);
                                     }
                                 }
-                                else if ((strcmp(almacenar[0], "COLOCAR-FICHA") == 0)/* &&
-                                          ((strcmp(almacenar[3], "izquierda") == 0) || (strcmp(almacenar[3], "derecha") == 0))*/)
+                                else if ((strcmp(almacenar[0], "COLOCAR-FICHA") == 0) && (isdigit(atoi(almacenar[1]))) &&
+                                          (isdigit(atoi(almacenar[2]))) && 
+                                          ((strcmp(almacenar[3], "izquierda") == 0) || (strcmp(almacenar[3], "derecha") == 0)))
                                 {
                                     int cont = 0;
                                     bool salir = false;
@@ -473,6 +473,8 @@ int main()
                                 ///-------------------------------------------------
                                 else
                                 {
+                                    for(int k=0; k<num_palabras; k++)
+                                        cout<<almacenar[k]<<" ";
                                     strcpy(buffer, "-ERR. Comando invalido\n");
                                     send(i, buffer, strlen(buffer), 0);
                                 }
